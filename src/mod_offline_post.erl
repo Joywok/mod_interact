@@ -42,7 +42,7 @@
 -include("logger.hrl").
 
 start(Host, Opts) ->
-    ?INFO_MSG("Starting mod_offline_post", [] ),
+    %% ?INFO_MSG("Starting mod_offline_post", [] ),
     register(?PROCNAME,spawn(?MODULE, init, [Host, Opts])),  
     ok.
 
@@ -53,7 +53,7 @@ init(Host, _Opts) ->
     ok.
 
 stop(Host) ->
-    ?INFO_MSG("Stopping mod_offline_post", [] ),
+    %% ?INFO_MSG("Stopping mod_offline_post", [] ),
     ejabberd_hooks:delete(offline_message_hook, Host,
 			  ?MODULE, send_notice, 10),
     ok.
@@ -61,6 +61,7 @@ stop(Host) ->
 send_notice(From, To, Packet) ->
     Type = xml:get_tag_attr_s(list_to_binary("type"), Packet),
     Body = xml:get_path_s(Packet, [{elem, list_to_binary("body")}, cdata]),
+    Json = xml:get_path_s(Packet, [{elem, list_to_binary("json")}, cdata]),
     Token = gen_mod:get_module_opt(To#jid.lserver, ?MODULE, auth_token, fun(S) -> iolist_to_binary(S) end, list_to_binary("")),
     PostUrl = gen_mod:get_module_opt(To#jid.lserver, ?MODULE, post_url, fun(S) -> iolist_to_binary(S) end, list_to_binary("")),
 
@@ -70,8 +71,9 @@ send_notice(From, To, Packet) ->
           "to=", To#jid.luser, Sep,
           "from=", From#jid.luser, Sep,
           "body=", url_encode(binary_to_list(Body)), Sep,
+          "json=", url_encode(binary_to_list(Json)), Sep,
           "access_token=", Token],
-        ?INFO_MSG("Sending post request to ~s with body \"~s\"", [PostUrl, Post]),
+        %% ?INFO_MSG("Sending post request to ~s with body \"~s\"", [PostUrl, Post]),
         httpc:request(post, {binary_to_list(PostUrl), [], "application/x-www-form-urlencoded", list_to_binary(Post)},[],[]),
         ok;
       true ->
