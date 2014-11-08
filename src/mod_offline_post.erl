@@ -65,7 +65,7 @@ send_notice(From, To, Packet) ->
     Token = gen_mod:get_module_opt(To#jid.lserver, ?MODULE, auth_token, fun(S) -> iolist_to_binary(S) end, list_to_binary("")),
     PostUrl = gen_mod:get_module_opt(To#jid.lserver, ?MODULE, post_url, fun(S) -> iolist_to_binary(S) end, list_to_binary("")),
 
-    if (Type == <<"chat">>) and (Body /= <<"">>) ->
+    if ((Type == <<"chat">>) or (Type == <<"groupchat">>)) and (Body /= <<"">>) ->
 	      Sep = "&",
         Post = [
           "to=", To#jid.luser, Sep,
